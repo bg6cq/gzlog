@@ -1,0 +1,1 @@
+0 5 * * * find /natlog -maxdepth 1 -mtime +200 -name "*gz" -exec rm -rf {} \;
