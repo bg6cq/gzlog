@@ -2,10 +2,12 @@
 
 # screen -S natlog -d -m /usr/src/gzlog/natlog.sh
 
+# echo 1 > /proc/sys/net/netfilter/nf_conntrack_acct
+
 cd /usr/src/gzlog
 
 while true; do
         echo `date` natlog starting >> run.log
-	conntrack -E $@ -b 10240000 | /usr/src/gzlog/gzlog -p /natlog/natlog -t
+	conntrack -E $@ -b 10240000 | /usr/src/gzlog/natlog_to_flowlog | /usr/src/gzlog/gzlog -p /natlog/natlog -t
 	sleep 1
 done
