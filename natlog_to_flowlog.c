@@ -5,7 +5,7 @@
 
 #define MAXLEN 2048
 
-char TIME[MAXLEN], PROTO[MAXLEN], PROTONUM[MAXLEN], SIP[MAXLEN], DIP[MAXLEN];
+char TIME[MAXLEN], STATUS[MAXLEN], PROTO[MAXLEN], PROTONUM[MAXLEN], SIP[MAXLEN], DIP[MAXLEN];
 char SPORT[MAXLEN], DPORT[MAXLEN], PKTS[MAXLEN], BYTES[MAXLEN];
 char NATSIP[MAXLEN], NATDIP[MAXLEN];
 char NATSPORT[MAXLEN], NATDPORT[MAXLEN], RPKTS[MAXLEN], RBYTES[MAXLEN];
@@ -42,15 +42,34 @@ int main(void)
 			buf[len] = 0;
 		}
 		sprintf(TIME, "%lu", (unsigned long)time(NULL));
-		p = buf + 9;
 
-		p = copy_str_to(PROTO, p);	// skip first [DESTROY] 
+		p = buf;
+		while (*p && (*p == ' '))
+			p++;
+		if (*p == 0)
+			continue;
+
+		if (strncmp(p, "[NEW]", 5) == 0) {
+			p = copy_str_to(STATUS, p);
+			strcpy(STATUS, "S");
+		} else if (strncmp(p, "[UPDATE]", 8) == 0) {
+			p = copy_str_to(STATUS, p);
+			strcpy(STATUS, "U");
+		} else if (strncmp(p, "[DESTROY]", 9) == 0) {
+			p = copy_str_to(STATUS, p);
+			strcpy(STATUS, "E");
+		} else
+			continue;
+
 		p = copy_str_to(PROTO, p);
 		p = copy_str_to(PROTONUM, p);
 		if ((TIME[0] == 0) || (PROTO[0] == 0) || (PROTONUM[0] == 0))
 			continue;
-		if (strncmp(p, "src=", 4) != 0)
-			continue;
+		if (strncmp(p, "src=", 4) != 0) {
+			p = strstr(p, "src=");
+			if (p == NULL)
+				continue;
+		}
 		p = p + 4;
 		p = copy_str_to(SIP, p);
 		if (strncmp(p, "dst=", 4) != 0)
@@ -73,21 +92,22 @@ int main(void)
 				p = copy_str_to(DPORT, p);
 			} else
 				continue;
-			p = strstr(p, "packets=");
-			if (p == NULL)
-				continue;
 		} else {
 			strcpy(SPORT, "0");
 			strcpy(DPORT, "0");
 		}
-		if (strncmp(p, "packets=", 8) != 0)
-			continue;
-		p = p + 8;
-		p = copy_str_to(PKTS, p);
-		if (strncmp(p, "bytes=", 6) != 0)
-			continue;
-		p = p + 6;
-		p = copy_str_to(BYTES, p);
+		char *pkt = strstr(p, "packets=");
+		if (pkt) {
+			p = pkt + 8;
+			p = copy_str_to(PKTS, p);
+			if (strncmp(p, "bytes=", 6) != 0)
+				continue;
+			p = p + 6;
+			p = copy_str_to(BYTES, p);
+		} else {
+			strcpy(PKTS, "0");
+			strcpy(BYTES, "0");
+		}
 
 		p = strstr(p, "src=");
 		if (p == NULL)
@@ -117,25 +137,27 @@ int main(void)
 				p = copy_str_to(NATDPORT, p);
 			} else
 				continue;
-			p = strstr(p, "packets=");
-			if (p == NULL)
-				continue;
 		} else {
 			strcpy(NATSPORT, "0");
 			strcpy(NATDPORT, "0");
 		}
-		if (strncmp(p, "packets=", 8) != 0)
-			continue;
-		p = p + 8;
-		p = copy_str_to(RPKTS, p);
-		if (strncmp(p, "bytes=", 6) != 0)
-			continue;
-		p = p + 6;
-		p = copy_str_to(RBYTES, p);
+		pkt = strstr(p, "packets=");
+		if (pkt) {
+			p = pkt + 8;
+			p = copy_str_to(RPKTS, p);
+			if (strncmp(p, "bytes=", 6) != 0)
+				continue;
+			p = p + 6;
+			p = copy_str_to(RBYTES, p);
+		} else {
+			strcpy(RPKTS, "0");
+			strcpy(RBYTES, "0");
+		}
 
-		printf("%s %s %s %s %s "
+		printf("%s %s %s %s %s %s "
 		       "%s %s %s %s %s "
-		       "%s %s %s %s %s\n", TIME, PROTO, PROTONUM, SIP, SPORT, DIP, DPORT, NATSIP, NATSPORT, NATDIP, NATDPORT, PKTS, BYTES, RPKTS, RBYTES);
+		       "%s %s %s %s %s\n", TIME, STATUS, PROTO, PROTONUM, SIP, SPORT, DIP, DPORT, NATSIP, NATSPORT, NATDIP, NATDPORT, PKTS, BYTES, RPKTS,
+		       RBYTES);
 	}
 	return 0;
 }
