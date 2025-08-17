@@ -20,8 +20,8 @@ int main(void)
 		if (t != last_tm) {
 			last_tm = t;
 			tm = localtime(&t);
-			printf("%02d%02d %02d:%02d:%02d%s", tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, p);
 		}
+		printf("%02d%02d %02d:%02d:%02d%s", tm->tm_mon + 1, tm->tm_mday, tm->tm_hour, tm->tm_min, tm->tm_sec, p);
 	}
 	return 0;
 }
