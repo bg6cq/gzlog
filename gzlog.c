@@ -1,5 +1,6 @@
 #include <stdio.h>
 #include <stdlib.h>
+#include <signal.h>
 #include <time.h>
 #include <string.h>
 #include <unistd.h>
@@ -13,6 +14,15 @@ int change_every_day = 1;
 int change_every_hour = 0;
 
 FILE *fp = NULL;
+
+void signal_handler(int sig)
+{
+	if (sig == SIGHUP) {
+		if (fp)
+			pclose(fp);
+		exit(0);
+	}
+}
 
 void changefile(struct tm *ctm)
 {
@@ -112,7 +122,11 @@ int main(int argc, char *argv[])
 		}
 	if (file_prefix[0] == 0)
 		usage();
-
+	if (signal(SIGHUP, signal_handler) == SIG_ERR) {
+		perror("signal(SIGHUB, signal_hander) error");
+		fclose(fp);
+		return -1;
+	}
 	char buf[MAXLEN];
 	int len;
 	while (fgets(buf, MAXLEN, stdin)) {
