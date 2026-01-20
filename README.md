@@ -15,7 +15,7 @@ gzlog -p file_prefix [ -t | -f | -d | -h ]
 ```
 gzlog -p /natlog/natlog 
 ```
-从stdin收到的日志，存放到/nat/log/natlog开头的文件，每天一个压缩文件
+从stdin收到的日志，存放到/natlog/natlog开头的文件，每天一个压缩文件
 
 ## 2. natlog.sh 记录conntrack日志
 使用方式：(需提前安装screen conntrack-tools)
