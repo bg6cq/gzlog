@@ -104,6 +104,7 @@ int main(int argc, char *argv[])
 		switch (c) {
 		case 'p':
 			strncpy(file_prefix, optarg, MAXLEN);
+			file_prefix[MAXLEN - 1] = '\0';
 			break;
 		case 't':
 			timestamp_t = 1;
